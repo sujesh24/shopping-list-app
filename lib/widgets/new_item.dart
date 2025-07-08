@@ -9,6 +9,19 @@ class NewItem extends StatefulWidget {
 }
 
 class _NewItemState extends State<NewItem> {
+  //from validation method
+
+  final _fromKey = GlobalKey<FormState>();
+
+  void _saveItem() {
+    _fromKey.currentState!.validate(); //method for validation
+  }
+
+  void _resetItem() {
+    //method to reset
+    _fromKey.currentState!.reset();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,6 +31,7 @@ class _NewItemState extends State<NewItem> {
       body: Padding(
         padding: EdgeInsets.all(12),
         child: Form(
+          key: _fromKey, //gloobal key
           child: Column(
             children: [
               TextFormField(
@@ -27,8 +41,15 @@ class _NewItemState extends State<NewItem> {
                       'Name',
                     ),
                     hintText: 'Enter new item name'),
+                //input validation check
                 validator: (value) {
-                  return 'Demo...';
+                  if (value == null ||
+                      value.isEmpty ||
+                      value.trim().length <= 1 ||
+                      value.trim().length > 50) {
+                    return 'Must be between 1 and 50 characters.';
+                  }
+                  return null;
                 },
               ),
               Row(
@@ -36,11 +57,21 @@ class _NewItemState extends State<NewItem> {
                 children: [
                   Expanded(
                     child: TextFormField(
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            int.tryParse(value) == null ||
+                            int.parse(value) <= 0) {
+                          return 'Must be valid positive number.';
+                        }
+                        return null;
+                      },
                       decoration: InputDecoration(
                           label: Text(
                             'Quantity',
                           ),
                           hintText: 'Enter qunatity in number'),
+                      keyboardType: TextInputType.number, //number keyboard
                     ),
                   ),
                   SizedBox(
@@ -77,8 +108,8 @@ class _NewItemState extends State<NewItem> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () {}, child: Text('Reset')),
-                  ElevatedButton(onPressed: () {}, child: Text('Add Item'))
+                  TextButton(onPressed: _resetItem, child: Text('Reset')),
+                  ElevatedButton(onPressed: _saveItem, child: Text('Add Item'))
                 ],
               )
             ],
