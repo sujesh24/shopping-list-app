@@ -22,6 +22,23 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
+  void _removeItem(GroceryItem item) {
+    final newItemIndex = _groceryItem.indexOf(item);
+    _groceryItem.remove(item);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Item removed.'),
+        // action: SnackBarAction(
+        //  //   label: 'Undo',
+        //     onPressed: () {
+        //       setState(() {
+        //         _groceryItem.insert(newItemIndex, item);
+        //       });
+        //     },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget content = Center(
@@ -48,14 +65,20 @@ class _GroceryListState extends State<GroceryList> {
     if (_groceryItem.isNotEmpty) {
       content = ListView.builder(
         itemCount: _groceryItem.length,
-        itemBuilder: (context, index) => ListTile(
-          title: Text(_groceryItem[index].name),
-          leading: Container(
-            height: 24,
-            width: 24,
-            color: _groceryItem[index].category.color,
+        itemBuilder: (context, index) => Dismissible(
+          key: ValueKey(_groceryItem[index].id),
+          onDismissed: (direction) {
+            _removeItem(_groceryItem[index]);
+          },
+          child: ListTile(
+            title: Text(_groceryItem[index].name),
+            leading: Container(
+              height: 24,
+              width: 24,
+              color: _groceryItem[index].category.color,
+            ),
+            trailing: Text(_groceryItem[index].quantity.toString()),
           ),
-          trailing: Text(_groceryItem[index].quantity.toString()),
         ),
       );
     }
