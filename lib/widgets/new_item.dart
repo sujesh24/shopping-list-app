@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list/data/categories.dart';
+import 'package:shopping_list/modules/category.dart';
+import 'package:shopping_list/modules/grocery_item.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -12,9 +14,20 @@ class _NewItemState extends State<NewItem> {
   //from validation method
 
   final _fromKey = GlobalKey<FormState>();
+  var _eneteredName = '';
+  var _enteredNumber = 1;
+  var _selectedCategory = categories[Categories.vegetables]!;
 
   void _saveItem() {
-    _fromKey.currentState!.validate(); //method for validation
+    if (_fromKey.currentState!.validate() //method for validation
+        ) {
+      _fromKey.currentState!.save();
+      Navigator.of(context).pop(GroceryItem(
+          id: DateTime.now().toString(),
+          name: _eneteredName,
+          quantity: _enteredNumber,
+          category: _selectedCategory));
+    }
   }
 
   void _resetItem() {
@@ -51,12 +64,20 @@ class _NewItemState extends State<NewItem> {
                   }
                   return null;
                 },
+                onSaved: (newValue) {
+                  _eneteredName = newValue!;
+                },
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: TextFormField(
+                      decoration: InputDecoration(
+                          label: Text(
+                            'Quantity',
+                          ),
+                          hintText: 'Enter qunatity in number'),
                       validator: (value) {
                         if (value == null ||
                             value.isEmpty ||
@@ -66,12 +87,11 @@ class _NewItemState extends State<NewItem> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(
-                          label: Text(
-                            'Quantity',
-                          ),
-                          hintText: 'Enter qunatity in number'),
+                      initialValue: _enteredNumber.toString(),
                       keyboardType: TextInputType.number, //number keyboard
+                      onSaved: (newValue) {
+                        _enteredNumber = int.parse(newValue!);
+                      },
                     ),
                   ),
                   SizedBox(
@@ -79,25 +99,33 @@ class _NewItemState extends State<NewItem> {
                   ),
                   Expanded(
                     child: DropdownButtonFormField(
+                      value: _selectedCategory,
                       items: [
                         for (final category in categories.entries)
                           DropdownMenuItem(
-                              value: category.value,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 16,
-                                    height: 16,
-                                    color: category.value.color,
-                                  ),
-                                  SizedBox(
-                                    width: 6,
-                                  ),
-                                  Text(category.value.title)
-                                ],
-                              ))
+                            value: category.value,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  color: category.value.color,
+                                ),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Text(category.value.title)
+                              ],
+                            ),
+                          )
                       ],
-                      onChanged: (value) {},
+                      onChanged: (value) {
+                        setState(
+                          () {
+                            _selectedCategory = value!;
+                          },
+                        );
+                      },
                     ),
                   )
                 ],
