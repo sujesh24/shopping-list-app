@@ -72,20 +72,53 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
-  void _removeItem(GroceryItem item) {
+  void _removeItem(GroceryItem item) async {
     final newItemIndex = _groceryItem.indexOf(item);
     setState(() {
       _groceryItem.remove(item);
+      isLoading = true;
     });
+
+    final url = Uri.https('flutter-prep-2b2fd-default-rtdb.firebaseio.com',
+        'grocery-list/${item.id}.json');
+    final response = await http.delete(url);
+
+    setState(() {
+      isLoading = false;
+      if (response.statusCode >= 400) {
+        _groceryItem.insert(newItemIndex, item);
+      }
+    });
+
+    //sacfold
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Item removed.'),
         action: SnackBarAction(
           label: 'Undo',
-          onPressed: () {
+          onPressed: () async {
             setState(() {
+              isLoading = true;
               _groceryItem.insert(newItemIndex, item);
+            });
+            //undo in firebase - restore the item with correct endpoint and data format
+            final url = Uri.https(
+                'flutter-prep-2b2fd-default-rtdb.firebaseio.com',
+                'grocery-list/${item.id}.json');
+            final response = await http.put(url,
+                headers: {'content-type': 'application/json'},
+                body: json.encode({
+                  'name': item.name,
+                  'quantity': item.quantity,
+                  'category': item.category.title,
+                }));
+            setState(() {
+              isLoading = false;
+              if (response.statusCode >= 400) {
+                // Handle error case - maybe remove the item from UI again
+                _groceryItem.removeAt(newItemIndex);
+              }
             });
           },
         ),
@@ -122,9 +155,7 @@ class _GroceryListState extends State<GroceryList> {
           color: Colors.white,
         ),
       );
-    }
-
-    if (_groceryItem.isNotEmpty) {
+    } else if (_groceryItem.isNotEmpty) {
       content = ListView.builder(
         itemCount: _groceryItem.length,
         itemBuilder: (context, index) => Dismissible(
