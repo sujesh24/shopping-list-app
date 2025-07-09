@@ -14,6 +14,7 @@ class NewItem extends StatefulWidget {
 }
 
 class _NewItemState extends State<NewItem> {
+  var isSending = false;
   //from validation method
 
   final _fromKey = GlobalKey<FormState>();
@@ -25,6 +26,9 @@ class _NewItemState extends State<NewItem> {
     if (_fromKey.currentState!.validate() //method for validation
         ) {
       _fromKey.currentState!.save();
+      setState(() {
+        isSending = true; //set sending to true
+      });
       //method to save the data
       final url = Uri.https('flutter-prep-2b2fd-default-rtdb.firebaseio.com',
           'grocery-list.json');
@@ -162,8 +166,18 @@ class _NewItemState extends State<NewItem> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: _resetItem, child: Text('Reset')),
-                  ElevatedButton(onPressed: _saveItem, child: Text('Add Item'))
+                  TextButton(
+                      onPressed: isSending ? null : _resetItem,
+                      child: Text('Reset')),
+                  ElevatedButton(
+                      onPressed: _saveItem,
+                      child: isSending
+                          ? SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(),
+                            )
+                          : Text('Add Item'))
                 ],
               )
             ],

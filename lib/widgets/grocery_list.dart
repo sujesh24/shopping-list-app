@@ -15,6 +15,8 @@ class GroceryList extends StatefulWidget {
 
 class _GroceryListState extends State<GroceryList> {
   List<GroceryItem> _groceryItem = [];
+  var isLoading = true;
+  String? _error;
 
 //load /get data
   @override
@@ -27,6 +29,11 @@ class _GroceryListState extends State<GroceryList> {
     final url = Uri.https(
         'flutter-prep-2b2fd-default-rtdb.firebaseio.com', 'grocery-list.json');
     final resposne = await http.get(url);
+    if (resposne.statusCode >= 400) {
+      setState(() {
+        _error = 'Failed to fetch data!Please try again.';
+      });
+    }
     //decode
     final Map<String, dynamic> listData = json.decode(resposne.body);
     //convert to GroceryItem
@@ -46,6 +53,7 @@ class _GroceryListState extends State<GroceryList> {
     }
     setState(() {
       _groceryItem = loadData;
+      isLoading = false;
     });
   }
 
@@ -69,7 +77,7 @@ class _GroceryListState extends State<GroceryList> {
     setState(() {
       _groceryItem.remove(item);
     });
-
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Item removed.'),
@@ -107,6 +115,14 @@ class _GroceryListState extends State<GroceryList> {
         ],
       ),
     );
+    if (isLoading) {
+      content = Center(
+        child: CircularProgressIndicator(
+          backgroundColor: Colors.grey,
+          color: Colors.white,
+        ),
+      );
+    }
 
     if (_groceryItem.isNotEmpty) {
       content = ListView.builder(
@@ -128,6 +144,16 @@ class _GroceryListState extends State<GroceryList> {
         ),
       );
     }
+
+    if (_error != null) {
+      content = Center(
+        child: Text(_error!,
+            style: TextStyle(
+              fontSize: 24,
+            )),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Groceries'),
