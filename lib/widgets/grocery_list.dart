@@ -24,17 +24,21 @@ class _GroceryListState extends State<GroceryList> {
 
   void _removeItem(GroceryItem item) {
     final newItemIndex = _groceryItem.indexOf(item);
-    _groceryItem.remove(item);
+    setState(() {
+      _groceryItem.remove(item);
+    });
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Item removed.'),
-        // action: SnackBarAction(
-        //  //   label: 'Undo',
-        //     onPressed: () {
-        //       setState(() {
-        //         _groceryItem.insert(newItemIndex, item);
-        //       });
-        //     },
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              _groceryItem.insert(newItemIndex, item);
+            });
+          },
+        ),
       ),
     );
   }
