@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/modules/category.dart';
 import 'package:http/http.dart' as http;
+import 'package:shopping_list/modules/grocery_item.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -25,8 +26,7 @@ class _NewItemState extends State<NewItem> {
         ) {
       _fromKey.currentState!.save();
       //method to save the data
-      final url = Uri.https(
-          'flutter-prep-2b2fd-default-rtdb.firebaseio.com',
+      final url = Uri.https('flutter-prep-2b2fd-default-rtdb.firebaseio.com',
           'grocery-list.json');
       final response = await http.post(
         url,
@@ -41,9 +41,18 @@ class _NewItemState extends State<NewItem> {
           },
         ),
       );
-      print(response.statusCode);
-      print(response.body);
-      // Navigator.of(context).pop();
+      final resData = json.decode(response.body);
+      //pop the screen
+      if (!context.mounted) return;
+      //check if context is mounted
+      Navigator.of(context).pop(
+        GroceryItem(
+          id: resData['name'],
+          name: _eneteredName,
+          quantity: _enteredNumber,
+          category: _selectedCategory,
+        ),
+      );
     }
   }
 
